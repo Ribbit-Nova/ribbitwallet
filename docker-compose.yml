@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  ribbit:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: Wallet-API
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+      - JWT_SECRET_KEY=4f3d2b7a1c9e7d3f2a9e8f6b4a8c2d5f6e7b8a9c3d2e1f4b5c6d7e8a9f2b4c6
+    depends_on:
+      - mongodb
+  mongodb:
+    image: mongo:latest
+    container_name: Database
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+volumes:
+  mongo_data:

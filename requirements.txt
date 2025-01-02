@@ -1,0 +1,16 @@
+python-dotenv
+fastapi
+fastapi-jwt-auth
+uvicorn
+pydantic==1.10.12
+email-validator
+motor
+pymongo
+pydantic
+mnemonic
+eth-account
+sqlalchemy
+pyjwt
+uuid
+motor
+cryptography
