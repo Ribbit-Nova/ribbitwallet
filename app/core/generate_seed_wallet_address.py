@@ -18,14 +18,14 @@ def generate_seed_wallet_address():
     logging.info("Mnemonic instance created")
     
     mnemonic_phrase = mnemo.generate(strength=128)  # 128 bits of entropy for 12 words
-    logging.info(f"Generated mnemonic phrase: {mnemonic_phrase}")
+    logging.info("Generated mnemonic phrase:", {mnemonic_phrase})
     
     # Derive a wallet address from the mnemonic phrase
     account = Account.from_mnemonic(mnemonic_phrase)
-    logging.info(f"Derived account: {account}")
+    logging.info("Derived account:", {account})
     
     address = account.address
-    logging.info(f"Derived address: {address}")
+    logging.info(f"Derived address:", {address})
     
     return address, encrypt_seed_phrase(mnemonic_phrase)
 

@@ -3,7 +3,7 @@ from datetime import datetime
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from app.router import router
-from configs.logging_fitlers import MaskingFilter, TraceIDFilter
+from configs.logging_fitlers import MaskingFilter, TraceIDFilter, JSONFormatter
 import os
 from dotenv import load_dotenv # type: ignore
 
@@ -24,9 +24,10 @@ if not log_folder or not log_file_name:
 if not os.path.exists(log_folder):
     os.makedirs(log_folder)
 
-log_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s - [Trace ID: %(traceid)s]")
+# Define the custom JSON formatter
+json_formatter = JSONFormatter()
 log_handler = TimedRotatingFileHandler(os.path.join(log_folder, log_file_name), when="midnight", interval=1, backupCount=30)
-log_handler.setFormatter(log_formatter)
+log_handler.setFormatter(json_formatter)
 log_handler.setLevel(logging.INFO)
 
 # Rename the log file to include the date

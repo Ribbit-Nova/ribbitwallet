@@ -26,37 +26,37 @@ def get_config():
 # All endpoints using this function require authorization
 async def authorization_required(Authorize: AuthJWT = Depends(), token: str = Security(oauth2_scheme)):
     try:
-        logging.info(f"Getting user details using JWT Token")
+        logging.info("Getting user details using JWT Token")
         decoded_token = decode_jwt_token(token)
         if not decoded_token:
             raise HTTPException(status_code=401, detail="Invalid or expired token")
         
         userid = decoded_token.get("sub")
-        logging.info(f"User ID from token: {userid}")
+        logging.info("User ID from token:", {userid})
         
         return decoded_token
     except Exception as e:
-        logging.error(f"Error in authorization_required: {str(e)}")
+        logging.error("Error in authorization_required:", {str(e)})
         raise HTTPException(status_code=401, detail="Invalid token")
 
 # Endpoints using this function do not require authorization
 async def authorization_optional(Authorize: AuthJWT = Depends(), token: str = Security(oauth2_scheme)):
     try:
         if token:
-            logging.info(f"Getting user details using JWT Token")
+            logging.info("Getting user details using JWT Token")
             decoded_token = decode_jwt_token(token)
             if not decoded_token:
                 raise HTTPException(status_code=401, detail="Invalid or expired token")
             
             userid = decoded_token.get("sub")
-            logging.info(f"User ID from token: {userid}")
+            logging.info("User ID from token:", {userid})
             
             return decoded_token
         else:
             logging.info("No token provided, proceeding without user details")
             return None
     except Exception as e:
-        logging.error(f"Error in authorization_optional: {str(e)}")
+        logging.error("Error in authorization_optional:", {str(e)})
         raise HTTPException(status_code=401, detail="Invalid token")
 
 class TraceIDMiddleware(BaseHTTPMiddleware):
@@ -64,5 +64,5 @@ class TraceIDMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         trace_id = str(uuid.uuid4())
         response.headers["X-Trace-Id"] = trace_id
-        logging.info(f"Generated Trace ID: {trace_id}")
+        logging.info("Generated Trace ID:", {trace_id})
         return response

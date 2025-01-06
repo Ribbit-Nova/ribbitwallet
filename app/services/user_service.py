@@ -12,14 +12,11 @@ logger = logging.getLogger(__name__)
 
 async def sign_up_user(user: Request):
     try:
-        logging.info(f"Received user sign-up request: {user}")
+        logging.info("Received user sign-up request.")
         request_data = await user.json()
         
         # Sanitize the request data
         user_dict = {k: v.strip() if isinstance(v, str) else v for k, v in request_data.items()}
-
-        print(user_dict, "################## user_dict 1")
-        
         is_new_user = True
         wallet_list = None
         wallet_data = {}
@@ -45,11 +42,11 @@ async def sign_up_user(user: Request):
                 "userid": str(uuid.uuid4()),  # Use UUID version 4
                 "user_type": UserType.user.value,  # Ensure user_type is a string
             })
-            logging.info(f"user_dict details: {user_dict}")
+            logging.info("user_dict details:", user_dict)
 
             # Insert user information into user collection
             userResult = await UserModel.create_user(user_dict)
-            logging.info(f"User creation result: {userResult}")
+            logging.info("User creation result:", userResult)
 
             if not userResult.inserted_id:
                 raise HTTPException(status_code=500, detail="User could not be created")
@@ -60,7 +57,7 @@ async def sign_up_user(user: Request):
             
             # add wallet in db
             result = await WalletModel.create_wallet(wallet_data)
-            logging.info(f"Wallet creation result: {result}")
+            logging.info("Wallet creation result:", result)
         
             if not result.inserted_id:
                 raise HTTPException(status_code=500, detail="Wallet could not be created")
@@ -77,7 +74,7 @@ async def sign_up_user(user: Request):
             "wallets": wallet_list
         }
     except Exception as e:
-        logging.error(f"Error during sign-up: {str(e)}")
+        logging.error(f"Error during sign-up:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 async def signup_by_social(social_platform, social_id):
@@ -86,9 +83,9 @@ async def signup_by_social(social_platform, social_id):
 
     # Check if social ID already exists
     existing_user = await UserModel.get_user_by_social_id(social_id)
-    logging.info(f"Existing user found: {existing_user}")
+    logging.info("Existing user found: %s", existing_user)
     if existing_user:
-        logging.info(f"User with social ID {social_id} already exists, assigning existing user details")
+        logging.info("User with social ID already exists, assigning existing user details", {social_id})
         wallets, total_counts = await WalletModel.get_wallet_addresses_by_userid(existing_user['userid'])
         return existing_user, {}, False, wallets
     else:
@@ -119,15 +116,15 @@ async def signup_by_seed(seed_phrase):
         raise HTTPException(status_code=400, detail="Seed phrase is required for seed import sign-up")
     
     wallet_address = get_wallet_address_from_seed_phrase(seed_phrase)
-    logging.info(f"Wallet address imported: {wallet_address}")
+    logging.info("Wallet address imported:", {wallet_address})
     existing_wallet = await WalletModel.get_wallet_by_address(wallet_address)
     if existing_wallet:
         logger.info(f"Wallet with address {wallet_address} already exists.")
         existing_user = await UserModel.get_user_by_userid(existing_wallet['userid'])
-        logging.info(f"Existing user found: {existing_user}")
+        logging.info("Existing user found:", existing_user)
 
         if existing_user:
-            logging.info(f"User with userid {existing_user['userid']} already exists, assigning existing user details")
+            logging.info("User with userid already exists, assigning existing user details", {existing_user['userid']})
             return existing_wallet, existing_user, False
         else:
             return existing_wallet, existing_user, False
@@ -150,7 +147,7 @@ async def update_user_by_id(userid: str, update_data: dict):
             raise HTTPException(status_code=404, detail="User not found or no changes made")
         return result
     except Exception as e:
-        logging.error(f"Error updating user by id: {str(e)}")
+        logging.error("Error updating user by id:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
     
 async def get_user_by_userid(userid: str):
@@ -159,8 +156,8 @@ async def get_user_by_userid(userid: str):
         if user:
             return user
         else:
-            logger.error(f"User not found with userid: {userid}")
+            logger.error("User not found with userid:", {userid})
             return None
     except Exception as e:
-        logger.error(f"Error fetching user by userid: {str(e)}")
+        logger.error("Error fetching user by userid:", {str(e)})
         raise e

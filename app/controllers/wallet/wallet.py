@@ -16,7 +16,7 @@ async def get_wallet_list(current_user: dict = Depends(authorization_required), 
     try:
         # Fetch the wallets associated with the current user using the service function
         wallets, total_count = await get_wallet_addresses_by_userid(current_user["sub"], limit, offset)
-        logging.info(f"Fetched wallets for user {current_user['sub']}")
+        logging.info("Fetched wallets for user",{current_user['sub']})
 
         # Transform the wallets into the response format
         wallet_list = [
@@ -35,7 +35,7 @@ async def get_wallet_list(current_user: dict = Depends(authorization_required), 
             wallets=wallet_list
         )
     except Exception as e:
-        logging.error(f"Error fetching wallet list: {str(e)}")
+        logging.error("Error fetching wallet list:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("", response_model=WalletCreateResponse, summary="Create Wallet", description="Create a new wallet")
@@ -54,7 +54,7 @@ async def generate_wallet(request: WalletCreateRequest, current_user: dict = Dep
             )
         )
     except Exception as e:
-        logging.error(f"Error generating wallet: {str(e)}")
+        logging.error("Error generating wallet:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.patch("/{wallet_id}", response_model=WalletCreateResponse, summary="Patch Wallet", description="Patch wallet name based on wallet id")
@@ -76,7 +76,7 @@ async def patch_wallet(wallet_id: str, request: WalletCreateRequest, current_use
             )
         )
     except Exception as e:
-        logging.error(f"Error updating wallet: {str(e)}")
+        logging.error("Error updating wallet:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/{wallet_id}", response_model=WalletCreateResponse, summary="Delete Wallet", description="Delete wallet by setting isDeleted flag to true")
@@ -98,5 +98,5 @@ async def delete_wallet(wallet_id: str, current_user: dict = Depends(authorizati
             )
         )
     except Exception as e:
-        logging.error(f"Error deleting wallet: {str(e)}")
+        logging.error("Error deleting wallet:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))

@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 @router.put("/signup", response_model=SignUpTokenResponse, summary="Sign Up", description="Sign up using either Wallet or Social method.")
 async def sign_up(user: SignUpRequest, request: Request):
     try:
+        logger.info("Sign up request received")
         user = await sign_up_user(request)
         
         # Transform the wallets into the response format
@@ -31,18 +32,20 @@ async def sign_up(user: SignUpRequest, request: Request):
             for wallet in user["wallets"]
         ]
 
+        logger.info("User signed up successfully")
         return SignUpTokenResponse(
             access_token=user["access_token"],
             token_type="bearer",
             wallets=wallet_list
         )
     except Exception as e:
-        logger.error(f"Error signing up user: {str(e)}")
+        logger.error("Error signing up user:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.patch("", response_model=UpdateUserResponse)
 async def update(user: UpdateUserRequest, request: Request, current_user: dict = Depends(authorization_required)):
     try:
+        logger.info("Update user request received")
         user_dict = {k: v for k, v in user.dict().items() if v is not None}
         if not user_dict:
             raise HTTPException(status_code=400, detail="No fields to update")
@@ -57,6 +60,7 @@ async def update(user: UpdateUserRequest, request: Request, current_user: dict =
                 "user_type": updated_user["user_type"]
             }
             accessToken = generate_jwt_token(updated_user["userid"], additional_claims)
+            logger.info("User updated successfully")
             return SignUpTokenResponse(
                 access_token=accessToken, 
                 token_type="bearer"
@@ -64,18 +68,20 @@ async def update(user: UpdateUserRequest, request: Request, current_user: dict =
         else:
             raise HTTPException(status_code=404, detail="User not found")
     except Exception as e:
-        logging.error(f"Error updating user: {str(e)}")
+        logger.error("Error updating user:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/me", response_model=UserDetailsResponse, summary="Get User Details", description="Get user details using a valid JWT token.")
 async def get_user_details(current_user: dict = Depends(authorization_required)):
     try:
+        logger.info("Get user details request received")
         userid = current_user["sub"]
         user = await get_user_by_userid(userid)
         if user:
+            logger.info("User details fetched successfully")
             return user
         else:
             raise HTTPException(status_code=404, detail="User not found")
     except Exception as e:
-        logging.error(f"Error fetching user details: {str(e)}")
+        logger.error("Error fetching user details:", {str(e)})
         raise HTTPException(status_code=500, detail=str(e))
