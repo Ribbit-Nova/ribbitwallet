@@ -1,5 +1,6 @@
 from contextvars import ContextVar
 import logging
+import json
 import uuid
 import os
 
@@ -39,3 +40,15 @@ class MaskingFilter(logging.Filter):
                 except ValueError:
                     continue
         return msg
+
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_record = {
+            "timestamp": self.formatTime(record, self.datefmt),
+            "level": record.levelname,
+            "traceid": getattr(record, 'traceid', ''),
+            "name": record.name,
+            "message": record.getMessage(),
+            "object": getattr(record, 'object', '')
+        }
+        return json.dumps(log_record)
