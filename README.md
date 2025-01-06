@@ -1,4 +1,4 @@
-# ribbitwallet
+# Ribbit Wallet
 
 ## Introduction
 RibbitWallet is a secure and user-friendly cryptocurrency wallet application.
