@@ -21,9 +21,10 @@ async def sign_up_user(user: Request):
         is_new_user = True
         wallet_list = None
         wallet_data = {}
+        user_data = {}
         if user_dict['signup_method'] == SignUpMethod.social:
             logging.info('Processing social sign-up')
-            user_dict, wallet_data, is_new_user, wallet_list = await signup_by_social(user_dict['social_platform'], user_dict['social_id'])
+            user_data, wallet_data, is_new_user, wallet_list = await signup_by_social(user_dict['social_platform'], user_dict['social_id'])
 
         elif user_dict['signup_method'] == SignUpMethod.wallet:
             logging.info('Processing wallet sign-up')
@@ -32,32 +33,41 @@ async def sign_up_user(user: Request):
 
         elif user_dict['signup_method'] == SignUpMethod.seed_import:
             logging.info('Processing seed import sign-up')
-            wallet_data, user_dict, is_new_user = await signup_by_seed(user_dict['seed_phrase'])
+            user_data, wallet_data, is_new_user = await signup_by_seed(user_dict['seed_phrase'])
 
         elif user_dict['signup_method'] == SignUpMethod.private_key_import:
             logging.info('Processing private key import sign-up')
-            wallet_data, user_dict, is_new_user = await signup_by_private_key(user_dict['private_key'])
+            user_data, wallet_data, is_new_user = await signup_by_private_key(user_dict['private_key'])
             
         else:
             raise HTTPException(status_code=400, detail='Invalid sign-up method')
         
+        # Add common parameters if available in request_data
+        common_params = ['email_address', 'first_name', 'last_name', 'phone_login_enabled', 'phone_unique_id']
+        for param in common_params:
+            if param in request_data:
+                user_data[param] = request_data[param]
+
         if is_new_user:
-            user_dict.update({
+            user_data.update({
                 'userid': str(uuid.uuid4()),  # Use UUID version 4
                 'user_type': UserType.user.value,  # Ensure user_type is a string
             })
-            logging.info('Prepared user details for sign up.', extra={'log_data':  str(user_dict)})
+            logging.info('Prepared user details for sign up.', extra={'log_data':  str(user_data)})
 
             # Insert user information into user collection
-            userResult = await UserModel.create_user(user_dict)
+            userResult = await UserModel.create_user(user_data)
             logging.info('User creation result:', extra={'log_data': str(userResult)})
 
             if not userResult.inserted_id:
                 raise HTTPException(status_code=500, detail='User could not be created')
+        if not is_new_user:
+            logging.info('User already exists, updating user details.', extra={'log_data': str(user_data)})
+            await update_user_by_id(user_data['userid'], user_data)
     
         # Check if wallet data exists and add userid
         if wallet_data and 'userid' not in wallet_data:
-            wallet_data['userid'] = user_dict['userid']
+            wallet_data['userid'] = user_data['userid']
             
             # add wallet in db
             result = await WalletModel.create_wallet(wallet_data)
@@ -71,7 +81,7 @@ async def sign_up_user(user: Request):
         elif wallet_data: 
             wallet_list = [wallet_data]
         
-        access_token = generate_jwt_token(user_dict['userid'], user_dict['user_type'])
+        access_token = generate_jwt_token(user_data['userid'], user_data['user_type'])
         return {
             'access_token': access_token,
             'token_type': 'bearer',
@@ -114,9 +124,9 @@ async def signup_by_seed(seed_phrase):
 
         if existing_user:
             logging.info('User with userid already exists, assigning existing user details.', extra={'log_data': {'userid': existing_wallet['userid']}})
-            return existing_wallet, existing_user, False
+            return existing_user, existing_wallet, False
         else:
-            return existing_wallet, existing_user, False
+            return existing_user, existing_wallet, False
     else:
         wallet_data = {
             'wallet_name': 'Imported Wallet',
@@ -126,9 +136,9 @@ async def signup_by_seed(seed_phrase):
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow()
         }
-        return wallet_data, {
+        return {
             'signup_method': SignUpMethod.seed_import
-        }, True
+        }, wallet_data, True
 
 async def signup_by_private_key(private_key):
     if not private_key:
@@ -144,9 +154,9 @@ async def signup_by_private_key(private_key):
 
         if existing_user:
             logging.info('User with userid already exists, assigning existing user details.', extra={'log_data': {'userid': existing_wallet['userid']}})
-            return existing_wallet, existing_user, False
+            return existing_user, existing_wallet, False
         else:
-            return existing_wallet, existing_user, False
+            return existing_user, existing_wallet, False
     else:
         wallet_data = {
             'wallet_name': 'Imported Wallet',
@@ -156,9 +166,9 @@ async def signup_by_private_key(private_key):
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow()
         }
-        return wallet_data, {
+        return {
             'signup_method': SignUpMethod.private_key_import
-        }, True
+        }, wallet_data, True
 
 async def update_user_by_id(userid: str, update_data: dict):
     try:
