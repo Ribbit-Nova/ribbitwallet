@@ -1,12 +1,20 @@
 from datetime import datetime
 from configs.db import wallet_collection
 from bson import ObjectId
+from app.models.private_keys import PrivateKeysModel
 
 class WalletModel:
     
     @staticmethod
     async def create_wallet(wallet_data: dict):
         wallet_data['isDeleted'] = False
+        
+        if 'private_key' in wallet_data:
+            private_key = wallet_data.pop('private_key')
+            
+            # Save the private key using PrivateKeysModel
+            PrivateKeysModel.save_private_key(wallet_data['userid'], private_key)
+
         result = await wallet_collection.insert_one(wallet_data)
         return result
     
