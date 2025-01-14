@@ -14,11 +14,11 @@ app = FastAPI()
 app.include_router(router)
 
 # Configure logging
-log_folder = os.getenv("LOG_FOLDER")
-log_file_name = os.getenv("LOG_FILE_NAME")
+log_folder = os.getenv('LOG_FOLDER')
+log_file_name = os.getenv('LOG_FILE_NAME')
 
 if not log_folder or not log_file_name:
-    raise ValueError("LOG_FOLDER and LOG_FILE_NAME environment variables must be set")
+    raise ValueError('LOG_FOLDER and LOG_FILE_NAME environment variables must be set')
 
 # Ensure the logs directory exists
 if not os.path.exists(log_folder):
@@ -26,7 +26,7 @@ if not os.path.exists(log_folder):
 
 # Define the custom JSON formatter
 json_formatter = JSONFormatter()
-log_handler = TimedRotatingFileHandler(os.path.join(log_folder, log_file_name), when="midnight", interval=1, backupCount=30)
+log_handler = TimedRotatingFileHandler(os.path.join(log_folder, log_file_name), when='midnight', interval=1, backupCount=30)
 log_handler.setFormatter(json_formatter)
 log_handler.setLevel(logging.INFO)
 
@@ -34,7 +34,7 @@ log_handler.setLevel(logging.INFO)
 log_handler.namer = lambda name: name.replace(log_file_name, f"{log_file_name.split('.')[0]}-{datetime.now().strftime('%Y-%m-%d')}.log")
 
 app_logger = logging.getLogger()
-log_level = os.getenv("LOG_LEVEL").upper()
+log_level = os.getenv('LOG_LEVEL').upper()
 app_logger.setLevel(getattr(logging, log_level))
 app_logger.addHandler(log_handler)
 

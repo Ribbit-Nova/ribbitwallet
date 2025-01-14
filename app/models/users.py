@@ -39,28 +39,28 @@ class UserModel:
 
     @staticmethod
     async def create_user(user_data: dict):
-        user_data["created_at"] = datetime.utcnow()
-        user_data["updated_at"] = datetime.utcnow()
+        user_data['created_at'] = datetime.utcnow()
+        user_data['updated_at'] = datetime.utcnow()
         result = await user_collection.insert_one(user_data)
         return result
 
     @staticmethod
     async def update_user(userid: str, update_data: dict):
-        update_data["updated_at"] = datetime.utcnow()
-        result = await user_collection.update_one({"userid": userid}, {"$set": update_data})
+        update_data['updated_at'] = datetime.utcnow()
+        result = await user_collection.update_one({'userid': userid}, {'$set': update_data})
         return result
 
     @staticmethod
     async def find_user_by_id(userid: str):
-        user = await user_collection.find_one({"_id": ObjectId(userid)})
+        user = await user_collection.find_one({'_id': ObjectId(userid)})
         return user
     
     @staticmethod
     async def get_user_by_userid(userid: str):
-        user = await user_collection.find_one({"userid": userid})
+        user = await user_collection.find_one({'userid': userid})
         return user
     
     @staticmethod
     async def get_user_by_social_id(social_id: str):
-        user = await user_collection.find_one({"social_id": social_id})
+        user = await user_collection.find_one({'social_id': social_id})
         return user
