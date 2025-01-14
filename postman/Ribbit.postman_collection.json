@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "***",
+		"_postman_id": "",
 		"name": "Ribbit",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "2061899"
+		"_exporter_id": ""
 	},
 	"item": [
 		{
@@ -175,6 +175,98 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Import Using Seed Phrase",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"seed_phrase\": \"eydjaXBoZXJ0ZXh0JzogJzNlM3VHb1c2T1V1ZWRPNHZTcGl1TFBZMmVSRkRXYnlHc3ZVMTJkOHp0K1pXODhvYzQ2WURsVkxTQVpkQ3kzTFVydjhaSEhCLzNUTWJ3ekdkemZIanBzSnFnSC92UDJ5V0UwUElzNmMzeWlndDZCdGZDdUh6N0hjQicsICdpdic6ICdDRTZyaE9FNE1DOXllK2tSJ30=\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{wallet-url}}/wallet/import",
+							"host": [
+								"{{wallet-url}}"
+							],
+							"path": [
+								"wallet",
+								"import"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Import Using Private Key",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"private_key\": \"eydjaXBoZXJ0ZXh0JzogJ1B0bWg5UmNycXRzaytPMGFLUkU4eGU3YWk4b3pjbnhGc01ZUWljZkpqWGcrY0hBSEFTa1p4eDVZM1ZSNmJJV1M2aXVOMjE1YTI1MWhSelNpYzhtVE1OQ3hZNGF6OUJxRFllSTJKdDZiUnFtTTFnPT0nLCAnaXYnOiAnVzl0NUovYlVBZ3NpMTh4Tyd9\",\n    \"network\": \"supra\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{wallet-url}}/wallet/import",
+							"host": [
+								"{{wallet-url}}"
+							],
+							"path": [
+								"wallet",
+								"import"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -193,7 +285,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"signup_method\": \"social\",\n  \"social_platform\": \"twitter\",\n  \"social_id\": \"jane_doe6\"\n}",
+							"raw": "{\n    \"signup_method\": \"social\",\n    \"social_platform\": \"twitter\",\n    \"social_id\": \"jane_doe1\",\n    \"first_name\": \"Jane\",\n    \"last_name\": \"Doe\",\n    \"email_address\": \"jane@google.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -278,6 +370,38 @@
 					"response": []
 				},
 				{
+					"name": "Signup Using Private Key",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"signup_method\": \"private_key_import\",\n    \"private_key\": \"eydjaXBoZXJ0ZXh0JzogJ054M1lwR1FLYks5K2NtRzNxSVVZU3VaNGdKREN1NG5Kb21GL1Yzc3M1ZnNpUGgrc25GRGJldittMW81eitWQUNDTURwVzdVMlNRWTVkNWpNa1NzVU40WjRuL2JoaC9ScldxNDRsR0Z4MVZ5eDl3PT0nLCAnaXYnOiAnWWF5WWZIcHJaNmMwd29udCd9\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{wallet-url}}/users/signup",
+							"host": [
+								"{{wallet-url}}"
+							],
+							"path": [
+								"users",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get User Details",
 					"request": {
 						"auth": {
@@ -331,7 +455,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"first_name\": \"John\",\n    \"last_name\": \"Deo\",\n    \"email_address\": \"new.email@example.com\",\n    \"biography\": \"Updated biography\",\n    \"personal_website\": \"https://newwebsite.com\",\n    \"twitter_handle\": \"newtwitterhandle\",\n    \"reddit_handle\": \"newreddithandle\",\n    \"github_username\": \"newgithubusername\"\n}",
+							"raw": "{\n    \"first_name\": \"Nitish\",\n    \"last_name\": \"Kaushal\",\n    \"email_address\": \"new.email@example.com\",\n    \"biography\": \"Updated biography\",\n    \"personal_website\": \"https://newwebsite.com\",\n    \"twitter_handle\": \"newtwitterhandle\",\n    \"reddit_handle\": \"newreddithandle\",\n    \"github_username\": \"newgithubusername\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

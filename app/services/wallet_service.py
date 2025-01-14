@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.core.generate_seed_wallet_address import generate_seed_wallet_address
+from app.core.generate_seed_wallet_address import generate_seed_wallet_address, get_wallet_address_from_seed_phrase, get_wallet_address_from_private_key
 from app.core.jwt_handler import generate_jwt_token
 from app.models.wallet import WalletModel
 from eth_account import Account # type: ignore
@@ -28,6 +28,41 @@ async def create_wallet(userid: str, wallet: str):
     except Exception as e:
         logging.error('An error occurred while creating the wallet', extra={'log_data': e})
         return None
+
+async def import_wallet(userid: str, import_data: str):
+    import_data = import_data.dict()
+    wallet_name = import_data.get('wallet_name', 'Imported Wallet')
+    private_key = None
+    if 'seed_phrase' in import_data and import_data['seed_phrase']:
+        wallet_address, private_key = get_wallet_address_from_seed_phrase(import_data['seed_phrase'])
+    elif 'private_key' in import_data and import_data['private_key']:
+        wallet_address, private_key = get_wallet_address_from_private_key(import_data['private_key'])
+    else:
+        raise HTTPException(status_code=400, detail='Either seed phrase or private key must be provided')
+
+    existing_wallet = await WalletModel.get_wallet_by_address_and_userid(wallet_address, userid)
+    if existing_wallet:
+        logger.info('Wallet address already exists for the user')
+        existing_wallet['updated_at'] = datetime.utcnow()
+        await WalletModel.update_wallet(existing_wallet['_id'], existing_wallet)
+        logger.info('Existing wallet updated successfully')
+        return existing_wallet
+    else: 
+        wallet_data = {
+            'wallet_name': wallet_name,
+            'wallet_address': wallet_address,
+            'seed_phrase': import_data.get('seed_phrase'),
+            'private_key': private_key,
+            'userid': userid,
+            'created_at': datetime.utcnow(),
+            'updated_at': datetime.utcnow()
+        }
+
+        # Save the wallet data
+        result = await WalletModel.create_wallet(wallet_data)
+        logger.info('Wallet imported successfully', extra={'wallet_address': wallet_address})
+
+        return wallet_data
 
 async def generate_new_wallet(wallet_name: str):
     # Generate wallet address and seed phrase

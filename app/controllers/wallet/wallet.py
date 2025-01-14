@@ -1,9 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
-from app.schemas.wallet import WalletCreateRequest, WalletCreateResponse, WalletList, WalletListResponse
+from fastapi import APIRouter, HTTPException, Depends, Query, Request
+from app.schemas.wallet import WalletCreateRequest, WalletImportRequest, WalletCreateResponse, WalletList, WalletListResponse
 import logging
-from fastapi import Depends
 from app.common.header import authorization_required
-from app.services.wallet_service import create_wallet, get_wallet_addresses_by_userid, update_wallet, delete_user_wallet
+from app.services.wallet_service import create_wallet, get_wallet_addresses_by_userid, update_wallet, delete_user_wallet, import_wallet
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ async def get_wallet_list(current_user: dict = Depends(authorization_required), 
     try:
         # Fetch the wallets associated with the current user using the service function
         wallets, total_count = await get_wallet_addresses_by_userid(current_user['sub'], limit, offset)
-        logging.info('Fetched wallets for user',extra={'log_data': {'userid': current_user['sub']}})
+        logging.info('Fetched wallets for user', extra={'log_data': {'userid': current_user['sub']}})
 
         # Transform the wallets into the response format
         wallet_list = [
@@ -56,6 +55,26 @@ async def generate_wallet(request: WalletCreateRequest, current_user: dict = Dep
         )
     except Exception as e:
         logging.error('Error generating wallet', extra={'log_data': e})
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post('/import', response_model=WalletCreateResponse, summary='Import Wallet', description='Import a wallet using a seed phrase or private key')
+async def import_wallet_route(import_data: WalletImportRequest, request: Request, current_user: dict = Depends(authorization_required)):
+    try:
+        userid = current_user['sub']
+        wallet_data = await import_wallet(userid, import_data)
+
+        return WalletCreateResponse(
+            message='Wallet created successfully.',
+            wallet=WalletListResponse(
+                wallet_name=wallet_data['wallet_name'] if wallet_data['wallet_name'] else None,
+                wallet_address=wallet_data['wallet_address'],
+                seed_phrase=wallet_data['seed_phrase'],
+                created_at=wallet_data['created_at'].isoformat(),
+                updated_at=wallet_data['updated_at'].isoformat()
+            )
+        )
+    except Exception as e:
+        logging.error('Error importing wallet: %s', str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.patch("/{wallet_id}", response_model=WalletCreateResponse, summary='Patch Wallet', description='Patch wallet name based on wallet id')

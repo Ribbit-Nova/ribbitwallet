@@ -24,8 +24,7 @@ async def sign_up(user: SignUpRequest, request: Request):
             WalletListResponse(
                 wallet_name=wallet['wallet_name'],
                 wallet_address=wallet['wallet_address'], 
-                seed_phrase=wallet['seed_phrase'], 
-                private_key=wallet['private_key'],
+                seed_phrase=wallet['seed_phrase'],
                 created_at=wallet['created_at'].isoformat(), 
                 updated_at=wallet['updated_at'].isoformat()
             )

@@ -46,3 +46,4 @@ asyncio.create_task(check_connection())
 
 user_collection = database.get_collection('users')
 wallet_collection = database.get_collection('wallets')
+private_keys_collection = database.get_collection('private_keys')
